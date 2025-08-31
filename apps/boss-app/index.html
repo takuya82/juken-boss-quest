@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ボス討伐学習アプリ v0.3.9 受験対策</title>
+    <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container" id="root" aria-live="polite">
+      <h1>🏰 ボス討伐学習アプリ v0.3.9 受験対策</h1>
+      <div class="save-indicator" id="save-indicator">進捗を保存しました</div>
+
+      <div class="setup-screen" id="setup-screen">
+        <h2>🎯 冒険の準備をしよう！</h2>
+        <div class="returning-user" id="returning-user">
+          <h3>🎉 おかえりなさい！</h3>
+          <div id="user-progress"></div>
+          <div class="returning-actions">
+            <button class="continue-btn" id="continue-btn">続きから始める</button>
+            <button class="new-game-btn" id="new-game-btn">最初から始める</button>
+          </div>
+        </div>
+
+        <div id="new-user-setup">
+          <div class="user-input">
+            <label for="user-name">👤 お名前を教えてね</label>
+            <input type="text" id="user-name" placeholder="例: なまえを入れて" maxlength="10" />
+          </div>
+          <div class="user-input">
+            <label>📚 学年を選んでね</label>
+            <div class="grade-selection">
+              <button class="grade-btn" data-grade="elementary">🌸 小学（中学受験）</button>
+              <button class="grade-btn" data-grade="junior">🌟 中学（高校受験）</button>
+            </div>
+          </div>
+          <button class="start-setup-btn" id="start-game-btn" disabled>🚀 冒険を始める！</button>
+        </div>
+      </div>
+
+      <div class="game-screen" id="game-screen">
+        <div class="user-info">
+          <div class="session-stats">
+            <div>今日: <span id="today-questions">0</span>問</div>
+            <div>正答: <span id="today-correct">0</span></div>
+          </div>
+          <h3 id="user-greeting">がんばって！</h3>
+          <div class="total-stats">
+            <div>累計: <span id="total-questions">0</span>問</div>
+            <div>Lv: <span id="user-level">1</span></div>
+          </div>
+        </div>
+
+        <div class="boss-section">
+          <div class="boss-name" id="boss-name">🐉 フレイムドラゴン</div>
+          <div class="boss-bg" id="boss-bg"><img alt="boss" /></div>
+        </div>
+
+        <!-- HP をボスセクションの外へ出し、視認性を改善 -->
+        <div class="hp-container">
+          <div class="hp-bar">
+            <div class="hp-fill" id="hp-fill"></div>
+            <div class="hp-text">HP: <span id="hp-display">100/100</span></div>
+          </div>
+        </div>
+
+        <div class="question-section">
+          <div class="question-header">
+            <div class="subject-tag" id="subject-tag">受験対策</div>
+            <div class="difficulty-indicator difficulty-normal" id="difficulty-indicator">★ 普通</div>
+          </div>
+          <div class="question-text" id="question-text">「クエスト開始」ボタンを押してボス討伐を始めましょう！</div>
+          <div class="options-container" id="options-container"></div>
+          <div class="result-text" id="result-text"></div>
+        </div>
+
+        <div class="controls">
+          <button class="control-btn" id="start-btn">🎮 クエスト開始</button>
+          <button class="control-btn" id="next-btn" style="display:none">➡️ 次の問題</button>
+          <button class="control-btn" id="reset-btn" style="display:none">🔄 最初から</button>
+          <button class="control-btn back-btn" id="back-btn">⬅️ 設定に戻る</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat-item">正答数<span class="stat-value" id="correct-count">0</span></div>
+          <div class="stat-item">総ダメージ<span class="stat-value" id="total-damage">0</span></div>
+          <div class="stat-item">連続正解<span class="stat-value" id="streak-count">0</span></div>
+          <div class="stat-item">問題数<span class="stat-value" id="question-count">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- エフェクト最前面 -->
+    <div id="fx-layer" class="fx-layer" aria-hidden="true"></div>
+
+    <!-- フェイルセーフメモ -->
+    <div id="boot-note" class="boot-note">初期化中…（1秒以上かかる場合はエラーの可能性）</div>
+
+    <script src="main.js?v=2" defer></script>
+  </body>
+  </html>
