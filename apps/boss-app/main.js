@@ -568,24 +568,32 @@
     function pickQuestion() {
       const grade = app.user.grade;
       const pool = (QUESTIONS[grade] || []).slice();
-      const seen = new Set(app.history[grade] || []);
-      const used = new Set(app.game.usedQuestions || []);
-      let remain = pool.filter((q) => !seen.has(q.id) && !used.has(q.id));
-      if (remain.length === 0) {
-        app.history[grade] = (app.history[grade] || []).slice(-50);
-        remain = pool.filter((q) => !new Set(app.history[grade]).has(q.id) && !used.has(q.id));
+      const alwaysRandom = true; // ランダム出題を最優先
+      let remain;
+      if (alwaysRandom) {
+        remain = pool;
+      } else {
+        const seen = new Set(app.history[grade] || []);
+        const used = new Set(app.game.usedQuestions || []);
+        remain = pool.filter((q) => !seen.has(q.id) && !used.has(q.id));
         if (remain.length === 0) {
-          app.game.usedQuestions = [];
-          remain = pool;
+          app.history[grade] = (app.history[grade] || []).slice(-50);
+          remain = pool.filter((q) => !new Set(app.history[grade]).has(q.id) && !used.has(q.id));
+          if (remain.length === 0) {
+            app.game.usedQuestions = [];
+            remain = pool;
+          }
         }
       }
       const q = remain[Math.floor(Math.random() * remain.length)];
       app.game.currentQuestion = q;
       app.game._qStart = Date.now();
-      app.game.usedQuestions.push(q.id);
-      const h = app.history[grade];
-      h.push(q.id);
-      if (h.length > 200) h.splice(0, h.length - 200);
+      if (!alwaysRandom) {
+        app.game.usedQuestions.push(q.id);
+        const h = app.history[grade];
+        h.push(q.id);
+        if (h.length > 200) h.splice(0, h.length - 200);
+      }
       debounceSave();
     }
     function renderQuestion() {
