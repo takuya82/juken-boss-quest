@@ -271,7 +271,9 @@
         "save-indicator",
         "setup-screen",
         "game-screen",
-        "hero-bg",
+        "hero-bg-a",
+        "hero-bg-b",
+        "hero-start-btn",
         "returning-user",
         "user-progress",
         "continue-btn",
@@ -305,13 +307,23 @@
       dom.gradeBtns = document.querySelectorAll(".grade-btn");
       dom.bossimg = dom.bossbg.querySelector("img");
       dom.fx = $("fx-layer");
+      if (dom.herostartbtn) {
+        dom.herostartbtn.addEventListener("click", () => {
+          try {
+            const name = $("user-name");
+            if (name) name.focus({ preventScroll: false });
+            document.getElementById("setup-screen")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          } catch {}
+        });
+      }
     }
 
     // ヒーロー背景にボス画像を表示（初回の期待感演出）
-    // 毎回ランダムなボスの背景を選ぶ（ログイン/再訪時に変化）
+    // セッションごとにランダム選択し、数秒ごとにクロスフェード（reduced-motionは固定）
     function applyHeroBg() {
       try {
-        if (!dom.herobg) return;
+        const a = $("hero-bg-a"), b = $("hero-bg-b");
+        if (!a || !b) return;
         // セッション内で一度決めたら固定（タブを閉じるまで）
         let heroKey = sessionStorage.getItem("bossAppHeroKey");
         if (!heroKey) {
@@ -320,7 +332,7 @@
         }
 
         const explicit = BOSS_ASSET_MAP[heroKey] ? folders.map((f) => `${f}/${BOSS_ASSET_MAP[heroKey]}`) : [];
-        const files = [
+        let files = [
           ...new Set([
             ...explicit,
             ...buildCandidates(heroKey),
@@ -328,18 +340,62 @@
           ]),
         ];
 
-        let i = 0;
-        const tryNext = () => {
+        // 予備として他のボスも混ぜて最大4枚まで回す
+        const otherKeys = shuffle(BOSS_LIST.map(x => x.key).filter(k => k !== heroKey)).slice(0, 3);
+        for (const k of otherKeys) {
+          const ex = BOSS_ASSET_MAP[k] ? folders.map((f) => `${f}/${BOSS_ASSET_MAP[k]}`) : [];
+          files.push(...ex, ...buildCandidates(k));
+        }
+        files = [...new Set(files)];
+
+        // reduced-motion の場合は最初の1枚だけ
+        const prefersReduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        let buf = 0; // 0 -> a がfront、1 -> b がfront
+        const setBg = (el, url) => {
+          el.style.backgroundImage = `url('${encodeURI(url)}')`;
+        };
+        const showFirst = () => {
+          let i = 0;
+          const loadNext = () => {
             if (i >= files.length) return;
             const p = files[i++];
+            const img = new Image();
+            img.onload = () => {
+              setBg(a, p);
+              a.classList.add("is-front");
+            };
+            img.onerror = loadNext;
+            img.src = p + (p.includes("?") ? "&" : "?") + "v=4";
+          };
+          loadNext();
+        };
+        showFirst();
+
+        if (prefersReduced) return; // アニメーションは控える
+
+        // クロスフェードで一定間隔ローテーション
+        let idx = 1; // 次に使う画像インデックス
+        const tick = () => {
+          if (files.length < 2) return; // 1枚しかなければ回さない
+          const p = files[idx % files.length];
           const img = new Image();
           img.onload = () => {
-            dom.herobg.style.backgroundImage = `url('${encodeURI(p)}')`;
+            if (buf === 0) {
+              setBg(b, p);
+              b.classList.add("is-front");
+              a.classList.remove("is-front");
+              buf = 1;
+            } else {
+              setBg(a, p);
+              a.classList.add("is-front");
+              b.classList.remove("is-front");
+              buf = 0;
+            }
           };
-          img.onerror = tryNext;
           img.src = p + (p.includes("?") ? "&" : "?") + "v=4";
+          idx++;
         };
-        tryNext();
+        setInterval(tick, 6000);
       } catch (e) {
         console.warn("hero bg failed", e);
       }
