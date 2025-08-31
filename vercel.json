@@ -1,0 +1,8 @@
+{
+  "redirects": [
+    { "source": "/", "destination": "/apps/boss-app/", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/apps/boss-app/$1" }
+  ]
+}
