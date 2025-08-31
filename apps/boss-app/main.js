@@ -358,7 +358,7 @@
         const setBg = (el, file) => {
           const url = file.url || file;
           const key = file.key || heroKey;
-          const pos = (HERO_FOCAL[key] || {}). [IS_MOBILE ? "mobile" : "desktop"] || (IS_MOBILE ? "center 22%" : "center 35%");
+          const pos = (HERO_FOCAL[key] || {})[IS_MOBILE ? "mobile" : "desktop"] || (IS_MOBILE ? "center 22%" : "center 35%");
           el.style.backgroundImage = `url('${encodeURI(url)}')`;
           el.style.backgroundPosition = pos;
         };
