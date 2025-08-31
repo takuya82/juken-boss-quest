@@ -302,8 +302,8 @@ body.hit-freeze #root { transform: scale(0.995); filter: contrast(1.08) saturate
   .boss-bg { min-height: 180px; }
   .boss-bg img { transform: translateY(14px); }
   .hp-bar { height: 22px; }
-  .hero-cta { top: 20px; }
-  .hero-title { font-size: 1.5em; }
+  .hero-cta { top: 36px; }
+  .hero-title { font-size: 1.3em; padding: 4px 10px; }
   /* スマホでは上部をより暗くして可読性を確保 */
   .hero-bg::after { background: linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0) 100%); }
   :root { --hero-h: 160px; }
