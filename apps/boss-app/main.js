@@ -121,6 +121,146 @@
       progress: { bossIndex: 0, bossOrder: [] },
     };
 
+    // ======= 問題バンクを自動生成して上書き（学年別・難易度別） =======
+    function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function makeChoiceSet(correct, distractorFactory, fmt) {
+      const to = fmt || ((v) => String(v));
+      const target = to(correct);
+      const set = new Set([target]);
+      let guard = 0;
+      while (set.size < 4 && guard++ < 50) set.add(to(distractorFactory()));
+      const arr = shuffle(Array.from(set));
+      return { options: arr, correct: arr.indexOf(target) };
+    }
+
+    // 小5（中学受験）
+    const ElemTopics = {
+      ratio(d) {
+        const a = randInt(2, d >= 3 ? 12 : 8);
+        const b = randInt(2, d >= 3 ? 15 : 10);
+        const unit = randInt(6, d >= 3 ? 24 : 18);
+        const total = (a + b) * unit;
+        const correct = a * unit;
+        const q = `AとBの比が ${a}:${b}、A+B=${total} のとき、Aはいくつ？`;
+        const { options, correct: idx } = makeChoiceSet(correct, () => correct + pick([-unit, unit, unit*2, -unit*2]));
+        return { subject: "算数", question: q, options, correct: idx, explanation: `等分=${total}/(${a+b})=${unit}、A=${a}×${unit}=${correct}`, difficulty: d };
+      },
+      percent(d) {
+        const base = randInt(80, 300);
+        const p = d <= 2 ? pick([5,10,15,20,25]) : randInt(6, 28);
+        const salt = Math.round(base * p) / 100;
+        const q = `食塩水${p}%の溶液 ${base}g に含まれる食塩は何g？`;
+        const { options, correct } = makeChoiceSet(salt, () => Math.round((salt + pick([-5,-2,2,5]))*10)/10, (v)=>`${v}g`);
+        return { subject: "算数", question: q, options, correct, explanation: `${base}×${p}%=${salt}g`, difficulty: d };
+      },
+      speed(d) {
+        const v = d <= 2 ? randInt(3, 8) : randInt(6, 15);
+        const t = d <= 2 ? randInt(2, 4) : randInt(3, 6);
+        const dist = v * t;
+        const type = pick(["道のり","時間","速さ"]);
+        let q, correct, expl;
+        if (type === "道のり") { q = `${v}km/h で ${t}時間 進むと道のりは？`; correct = dist; expl = `${v}×${t}=${dist}km`; }
+        else if (type === "時間") { q = `${v}km/h で ${dist}km 進む時間は？`; correct = dist / v; expl = `${dist}÷${v}=${correct}時間`; }
+        else { q = `${dist}km を ${t}時間で進む速さは？`; correct = dist / t; expl = `${dist}÷${t}=${correct}km/h`; }
+        const { options, correct: idx } = makeChoiceSet(correct, () => correct + pick([-2,-1,1,2]), (v)=>`${v}`);
+        return { subject: "算数", question: q, options, correct: idx, explanation: expl, difficulty: d };
+      },
+      area(d) {
+        const shape = d <= 2 ? pick(["長方形","三角形"]) : pick(["三角形","台形"]);
+        let q, correct, expl;
+        if (shape === "長方形") { const a=randInt(4,20), b=randInt(4,15); correct=a*b; q=`${a}cm×${b}cm の面積は？`; expl=`${a}×${b}=${correct}cm²`; }
+        else if (shape === "三角形") { const b=randInt(6,20), h=randInt(4,16); correct=(b*h)/2; q=`底辺${b}cm、高さ${h}cm の面積は？`; expl=`${b}×${h}÷2=${correct}cm²`; }
+        else { const a=randInt(6,18), b=randInt(6,18), h=randInt(4,12); correct=((a+b)*h)/2; q=`上底${a}cm、下底${b}cm、高さ${h}cm の台形の面積は？`; expl=`(${a}+${b})×${h}÷2=${correct}cm²`; }
+        const { options, correct: idx } = makeChoiceSet(correct, () => correct + pick([-4,-2,2,4]), (v)=>`${v}cm²`);
+        return { subject: "算数", question: q, options, correct: idx, explanation: expl, difficulty: d };
+      },
+      lcm(d) {
+        const x = randInt(4, d >= 3 ? 18 : 12), y = randInt(4, d >= 3 ? 20 : 12);
+        const gcd = (a,b)=>b?gcd(b,a%b):a; const g=gcd(x,y); const l=(x*y)/g;
+        const q = `${x} と ${y} の最小公倍数は？`;
+        const { options, correct } = makeChoiceSet(l, () => l + pick([-x,-y,x,y]));
+        return { subject: "算数", question: q, options, correct, explanation: `gcd=${g} → lcm=${x}×${y}÷${g}=${l}`, difficulty: d };
+      },
+      probability(d) {
+        if (d <= 2) { const target = randInt(1,6); const q=`サイコロ1回。${target}の目の確率は？`;
+          const { options, correct } = makeChoiceSet("1/6", () => pick(["1/3","1/4","1/5","1/2"]), (v)=>v);
+          return { subject: "算数", question: q, options, correct, explanation: "6通り中1通り", difficulty: d }; }
+        const red=randInt(2,5), blue=randInt(2,5), total=red+blue; const q=`赤${red}個、青${blue}個から1個。赤の確率は？`;
+        const { options, correct } = makeChoiceSet(`${red}/${total}`, () => `${red}/${total + pick([-1,1,2,-2])}`, (v)=>v);
+        return { subject: "算数", question: q, options, correct, explanation: `${total}通り中${red}通り`, difficulty: d };
+      },
+    };
+
+    // 中2（高校受験）
+    const JrTopics = {
+      linearEq(d) {
+        const a=randInt(1,5), b=randInt(-9,12), c=randInt(1,5), d2=randInt(-9,12);
+        const x=(d2-b)/(a-c);
+        const q = `${a}x${b>=0?"+"+b:b}=${c}x${d2>=0?"+"+d2:d2} の解は？`;
+        const { options, correct } = makeChoiceSet(x, () => x + pick([-3,-1,1,3]), (v)=>`x=${v}`);
+        return { subject: "数学", question: q, options, correct, explanation: `${a-c}x=${d2-b} → x=${x}`, difficulty: d };
+      },
+      simEq(d) {
+        const a=randInt(1,5), b=randInt(1,5), d1=randInt(1,5), e=randInt(1,5);
+        const X=randInt(-5,5), Y=randInt(-5,5);
+        const C=a*X+b*Y, F=d1*X+e*Y;
+        const q = `${a}x+${b}y=${C}、 ${d1}x+${e}y=${F} の解 (x,y) は？`;
+        const correct = `(${X},${Y})`;
+        const { options, correct: idx } = makeChoiceSet(correct, () => `(${X + pick([-2,-1,1,2])},${Y + pick([-2,-1,1,2])})`);
+        return { subject: "数学", question: q, options, correct: idx, explanation: "加減法で解く", difficulty: d };
+      },
+      inequality(d) {
+        const a=randInt(1,6), b=randInt(-10,10), rhs=randInt(-10,12), sign=pick(["<",">","≤","≥"]);
+        const x=(rhs-b)/a; const q=`${a}x${b>=0?"+"+b:b} ${sign} ${rhs} を満たすxの範囲は？`;
+        const correct = `x${sign}${x}`;
+        const { options, correct: idx } = makeChoiceSet(correct, () => (sign==="<"||sign==="≤"?`x>${x}`:`x<${x}`));
+        return { subject: "数学", question: q, options, correct: idx, explanation: `${a}x${b>=0?"+"+b:b}${sign}${rhs} → x${sign}${x}`, difficulty: d };
+      },
+      linearFunc(d) {
+        const a = pick([-3,-2,-1,1,2,3]), b=randInt(-6,6), x=randInt(-3,5), y=a*x+b;
+        const q = `一次関数 y=ax+b で、x=${x} のとき y=${y}、切片が ${b}。傾き a は？`;
+        const { options, correct } = makeChoiceSet(a, () => a + pick([-2,-1,1,2]), (v)=>`${v}`);
+        return { subject: "数学", question: q, options, correct, explanation: `a=(y-b)/x=(${y}-${b})/${x}=${a}`, difficulty: d };
+      },
+      pythagoras(d) {
+        const triples=[[3,4,5],[5,12,13],[6,8,10],[8,15,17]]; const [a,b,c]=triples[randInt(0,triples.length-1)];
+        const s=d>=3?randInt(1,3):1; const A=a*s,B=b*s,C=c*s; const miss=pick(["斜辺","一辺"]);
+        let q,correct,expl; if(miss==="斜辺"){ q=`直角三角形で、辺が ${A} と ${B} のとき、斜辺は？`; correct=C; expl=`${A}²+${B}²=${C}²`; }
+        else { q=`直角三角形で、斜辺 ${C}、一辺 ${A} のとき、もう一辺は？`; correct=B; expl=`${C}²-${A}²=${B}²`; }
+        const { options, correct: idx } = makeChoiceSet(correct, () => correct + pick([-3,-1,1,3]));
+        return { subject: "数学", question: q, options, correct: idx, explanation: expl, difficulty: d };
+      },
+      probability(d) {
+        const target=randInt(2,12); const counts=[0,0,1,2,3,4,5,6,5,4,3,2,1]; const ways=counts[target];
+        const q=`サイコロを2個同時に投げる。和が ${target} となる確率は？`; const correct=`${ways}/36`;
+        const { options, correct: idx } = makeChoiceSet(correct, () => `${Math.max(1, ways + pick([-2,-1,1,2]))}/36`, (v)=>v);
+        return { subject: "数学", question: q, options, correct: idx, explanation: `全36通り、和=${target} は ${ways}通り`, difficulty: d };
+      },
+    };
+
+    function buildBank(topicMap, keyPrefix) {
+      const out = [];
+      for (const t of Object.keys(topicMap)) {
+        for (let d = 1; d <= 4; d++) {
+          for (let i = 0; i < 5; i++) {
+            const q = topicMap[t](d);
+            out.push({ id: `${keyPrefix}-${t}-${d}-${i}`, ...q });
+          }
+        }
+      }
+      return shuffle(out);
+    }
+
+    (function overwriteQuestions(){
+      try {
+        const elementary = buildBank(ElemTopics, "e");
+        const junior = buildBank(JrTopics, "j");
+        if (Array.isArray(QUESTIONS.elementary)) QUESTIONS.elementary = elementary; else QUESTIONS.elementary = elementary;
+        if (Array.isArray(QUESTIONS.junior)) QUESTIONS.junior = junior; else QUESTIONS.junior = junior;
+      } catch(e) { console.warn("QUESTIONS overwrite failed", e); }
+    })();
+
     /* ---------- DOM ---------- */
     const dom = {};
     function $(id) {
