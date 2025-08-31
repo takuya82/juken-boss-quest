@@ -2,6 +2,7 @@
   color-scheme: light dark;
   --bg-grad-a: #667eea;
   --bg-grad-b: #764ba2;
+  --hero-h: 220px;
   --glass: rgba(255, 255, 255, 0.1);
   --glass-strong: rgba(255, 255, 255, 0.2);
   --text: #ffffff;
@@ -55,14 +56,14 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 10%, rgba(0,0,0,0.25), rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.75));
+  background: radial-gradient(ellipse at 50% 10%, rgba(0,0,0,0.35), rgba(0,0,0,0.6) 55%, rgba(0,0,0,0.78));
 }
 .hero-bg.is-front { opacity: 1; }
 
 .hero-cta {
   position: absolute;
   left: 50%;
-  top: 18%;
+  top: 24px;
   transform: translateX(-50%);
   text-align: center;
   z-index: 2;
@@ -119,6 +120,7 @@ h1 {
 .save-indicator.show { opacity: 1; }
 
 .setup-screen { text-align: center; padding: 10px; position: relative; z-index: 2; }
+.setup-screen { padding-top: var(--hero-h); }
 .setup-screen h2 { font-size: 1.6em; margin-bottom: 14px; color: #ffe082; }
 .returning-user {
   background: rgba(76, 175, 80, 0.2);
@@ -290,8 +292,9 @@ body.hit-freeze #root { transform: scale(0.995); filter: contrast(1.08) saturate
   .container { width: 96%; padding: 16px; }
   .boss-bg { min-height: 180px; }
   .hp-bar { height: 22px; }
-  .hero-cta { top: 10%; }
-  .hero-title { font-size: 1.6em; }
+  .hero-cta { top: 12px; }
+  .hero-title { font-size: 1.4em; }
+  :root { --hero-h: 160px; }
 }
 
 /* シンプル化：重複見出しと補助見出しを非表示に */
