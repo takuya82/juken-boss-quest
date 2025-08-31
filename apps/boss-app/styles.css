@@ -88,6 +88,9 @@ body {
 }
 .cta-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
 
+/* 要望によりヒーローの「冒険を始める」は非表示に */
+.hero-cta .cta-btn { display: none !important; }
+
 .hero-lead {
   margin-top: 8px;
   margin-bottom: 12px;
@@ -121,7 +124,7 @@ h1 {
 
 .setup-screen { text-align: center; padding: 10px; position: relative; z-index: 2; }
 .setup-screen { padding-top: var(--hero-h); }
-.setup-screen h2 { font-size: 1.6em; margin-bottom: 14px; color: #ffe082; }
+.setup-screen h2 { display: none; }
 .returning-user {
   background: rgba(76, 175, 80, 0.2);
   border: 2px solid var(--accent);
