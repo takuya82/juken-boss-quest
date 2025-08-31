@@ -1,0 +1,11 @@
+{
+  "name": "hello-codex-static-site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal static site that displays 'Hello Codex!'",
+  "scripts": {
+    "serve": "npx http-server -p 8000",
+    "check:links": "npx linkinator http://localhost:8000/ -r",
+    "format": "npx prettier -w ."
+  }
+}
