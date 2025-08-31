@@ -39,6 +39,31 @@ body {
   overflow: hidden;
 }
 
+/* Hero background: ボス画像を活かすフルブリード */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 30%;
+  filter: saturate(1.05) contrast(1.05) brightness(0.9);
+  transform: scale(1.03);
+  z-index: 0;
+}
+.hero-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 10%, rgba(0,0,0,0.25), rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.75));
+}
+
+.hero-lead {
+  margin-top: 8px;
+  margin-bottom: 12px;
+  font-size: 1.25em;
+  color: #ffe082;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.45);
+}
+
 h1 {
   text-align: center;
   font-size: 2.2em;
@@ -242,4 +267,3 @@ body.hit-freeze #root { transform: scale(0.995); filter: contrast(1.08) saturate
 /* フェイルセーフ */
 .boot-note { position: fixed; left: 50%; top: 12px; transform: translateX(-50%); padding: 8px 12px; border-radius: 10px; background: rgba(0,0,0,0.35); backdrop-filter: blur(6px); font-size: 12px; }
 .boot-note.error { background: #b00020; }
-

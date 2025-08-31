@@ -271,6 +271,7 @@
         "save-indicator",
         "setup-screen",
         "game-screen",
+        "hero-bg",
         "returning-user",
         "user-progress",
         "continue-btn",
@@ -304,6 +305,28 @@
       dom.gradeBtns = document.querySelectorAll(".grade-btn");
       dom.bossimg = dom.bossbg.querySelector("img");
       dom.fx = $("fx-layer");
+    }
+
+    // ヒーロー背景にボス画像を表示（初回の期待感演出）
+    function applyHeroBg() {
+      try {
+        if (!dom.herobg) return;
+        const b = currentBoss();
+        let i = 0;
+        const tryNext = () => {
+          if (i >= b.files.length) return;
+          const p = b.files[i++];
+          const img = new Image();
+          img.onload = () => {
+            dom.herobg.style.backgroundImage = `url('${encodeURI(p)}')`;
+          };
+          img.onerror = tryNext;
+          img.src = p + (p.includes("?") ? "&" : "?") + "v=4";
+        };
+        tryNext();
+      } catch (e) {
+        console.warn("hero bg failed", e);
+      }
     }
 
     /* ---------- Storage ---------- */
@@ -463,6 +486,7 @@
     function enterSetup() {
       dom.setupscreen.style.display = "block";
       dom.gamescreen.style.display = "none";
+      applyHeroBg();
       const saved = loadData();
       if (saved) {
         app = saved;
