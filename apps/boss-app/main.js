@@ -307,6 +307,21 @@
       dom.gradeBtns = document.querySelectorAll(".grade-btn");
       dom.bossimg = dom.bossbg.querySelector("img");
       dom.fx = $("fx-layer");
+      // Privacy-friendly UI: adjust label/placeholder and add a local-only note + clear button
+      try {
+        const nameInput = $("user-name");
+        const nameLabel = document.querySelector('label[for="user-name"]');
+        if (nameLabel) nameLabel.textContent = "👤 ニックネームを入力してね";
+        if (nameInput) nameInput.placeholder = "例: タク / りん";
+        if (nameInput && !document.getElementById("clear-data-btn")) {
+          const note = document.createElement("div");
+          note.className = "privacy-note";
+          note.innerHTML = '入力と進捗はこの端末内だけに保存されます。 <button class="link-btn" id="clear-data-btn" type="button">データ削除</button>';
+          if (nameInput.parentNode) nameInput.parentNode.appendChild(note);
+          const btn = note.querySelector("#clear-data-btn");
+          if (btn) btn.addEventListener("click", () => { try { localStorage.removeItem("bossAppExam"); location.reload(); } catch(e) { console.warn(e); } });
+        }
+      } catch (e) { console.warn("privacy ui inject failed", e); }
       if (dom.herostartbtn) {
         dom.herostartbtn.addEventListener("click", () => {
           try {

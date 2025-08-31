@@ -311,3 +311,8 @@ body.hit-freeze #root { transform: scale(0.995); filter: contrast(1.08) saturate
 /* フェイルセーフ */
 .boot-note { position: fixed; left: 50%; top: 12px; transform: translateX(-50%); padding: 8px 12px; border-radius: 10px; background: rgba(0,0,0,0.35); backdrop-filter: blur(6px); font-size: 12px; }
 .boot-note.error { background: #b00020; }
+
+/* Privacy note and link-like button */
+.privacy-note { font-size: 12px; color: #f1f5f9; opacity: 0.9; margin-top: 6px; }
+.privacy-note .link-btn { background: none; border: none; color: #93c5fd; text-decoration: underline; cursor: pointer; padding: 0 2px; }
+.privacy-note .link-btn:hover { color: #bfdbfe; }
