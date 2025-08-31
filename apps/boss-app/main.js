@@ -308,14 +308,30 @@
     }
 
     // ヒーロー背景にボス画像を表示（初回の期待感演出）
+    // 毎回ランダムなボスの背景を選ぶ（ログイン/再訪時に変化）
     function applyHeroBg() {
       try {
         if (!dom.herobg) return;
-        const b = currentBoss();
+        // セッション内で一度決めたら固定（タブを閉じるまで）
+        let heroKey = sessionStorage.getItem("bossAppHeroKey");
+        if (!heroKey) {
+          heroKey = (BOSS_LIST[(Math.random() * BOSS_LIST.length) | 0] || BOSS_LIST[0]).key;
+          sessionStorage.setItem("bossAppHeroKey", heroKey);
+        }
+
+        const explicit = BOSS_ASSET_MAP[heroKey] ? folders.map((f) => `${f}/${BOSS_ASSET_MAP[heroKey]}`) : [];
+        const files = [
+          ...new Set([
+            ...explicit,
+            ...buildCandidates(heroKey),
+            ...buildCandidates("dragon-main"),
+          ]),
+        ];
+
         let i = 0;
         const tryNext = () => {
-          if (i >= b.files.length) return;
-          const p = b.files[i++];
+            if (i >= files.length) return;
+            const p = files[i++];
           const img = new Image();
           img.onload = () => {
             dom.herobg.style.backgroundImage = `url('${encodeURI(p)}')`;
