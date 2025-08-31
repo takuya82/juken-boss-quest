@@ -294,6 +294,7 @@ body.hit-freeze #root { transform: scale(0.995); filter: contrast(1.08) saturate
 @media (max-width: 480px) {
   .container { width: 96%; padding: 16px; }
   .boss-bg { min-height: 180px; }
+  .boss-bg img { transform: translateY(14px); }
   .hp-bar { height: 22px; }
   .hero-cta { top: 12px; }
   .hero-title { font-size: 1.4em; }
