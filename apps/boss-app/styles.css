@@ -68,7 +68,7 @@ body {
   z-index: 2;
 }
 .hero-title {
-  font-size: 1.9em;
+  font-size: 1.6em;
   font-weight: 900;
   letter-spacing: 0.04em;
   margin-bottom: 10px;
@@ -293,6 +293,10 @@ body.hit-freeze #root { transform: scale(0.995); filter: contrast(1.08) saturate
   .hero-cta { top: 10%; }
   .hero-title { font-size: 1.6em; }
 }
+
+/* シンプル化：重複見出しと補助見出しを非表示に */
+.container > h1 { display: none; }
+.hero-lead { display: none; }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
