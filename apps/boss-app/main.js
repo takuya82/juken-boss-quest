@@ -331,41 +331,50 @@
           sessionStorage.setItem("bossAppHeroKey", heroKey);
         }
 
-        const explicit = BOSS_ASSET_MAP[heroKey] ? folders.map((f) => `${f}/${BOSS_ASSET_MAP[heroKey]}`) : [];
-        let files = [
-          ...new Set([
-            ...explicit,
-            ...buildCandidates(heroKey),
-            ...buildCandidates("dragon-main"),
-          ]),
-        ];
-
-        // 予備として他のボスも混ぜて最大4枚まで回す
-        const otherKeys = shuffle(BOSS_LIST.map(x => x.key).filter(k => k !== heroKey)).slice(0, 3);
-        for (const k of otherKeys) {
-          const ex = BOSS_ASSET_MAP[k] ? folders.map((f) => `${f}/${BOSS_ASSET_MAP[k]}`) : [];
-          files.push(...ex, ...buildCandidates(k));
+        // 画像ファイルと対応キーのリストを作る
+        const toFiles = (key) => {
+          const ex = BOSS_ASSET_MAP[key] ? folders.map((f) => `${f}/${BOSS_ASSET_MAP[key]}`) : [];
+          return [...ex, ...buildCandidates(key)];
+        };
+        const keys = [heroKey, ...shuffle(BOSS_LIST.map(x => x.key).filter(k => k !== heroKey)).slice(0, 3)];
+        let files = [];
+        for (const k of keys) {
+          files.push(...toFiles(k).map((url) => ({ url, key: k })));
         }
-        files = [...new Set(files)];
+        // urlでユニーク化
+        const seen = new Set();
+        files = files.filter(({ url }) => (seen.has(url) ? false : (seen.add(url), true)));
 
         // reduced-motion の場合は最初の1枚だけ
         const prefersReduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
         let buf = 0; // 0 -> a がfront、1 -> b がfront
-        const setBg = (el, url) => {
+        const HERO_FOCAL = {
+          "dragon-main": { desktop: "center 35%", mobile: "center 18%" },
+          funtom: { desktop: "center 40%", mobile: "center 24%" },
+          kyojin: { desktop: "center 38%", mobile: "center 22%" },
+          medusa: { desktop: "center 32%", mobile: "center 20%" },
+          sukal: { desktop: "center 45%", mobile: "center 28%" },
+        };
+        const setBg = (el, file) => {
+          const url = file.url || file;
+          const key = file.key || heroKey;
+          const pos = (HERO_FOCAL[key] || {}). [IS_MOBILE ? "mobile" : "desktop"] || (IS_MOBILE ? "center 22%" : "center 35%");
           el.style.backgroundImage = `url('${encodeURI(url)}')`;
+          el.style.backgroundPosition = pos;
         };
         const showFirst = () => {
           let i = 0;
           const loadNext = () => {
             if (i >= files.length) return;
-            const p = files[i++];
+            const f = files[i++];
             const img = new Image();
             img.onload = () => {
-              setBg(a, p);
+              setBg(a, f);
               a.classList.add("is-front");
             };
             img.onerror = loadNext;
-            img.src = p + (p.includes("?") ? "&" : "?") + "v=4";
+            const u = f.url || f;
+            img.src = u + (u.includes("?") ? "&" : "?") + "v=4";
           };
           loadNext();
         };
@@ -377,22 +386,23 @@
         let idx = 1; // 次に使う画像インデックス
         const tick = () => {
           if (files.length < 2) return; // 1枚しかなければ回さない
-          const p = files[idx % files.length];
+          const f = files[idx % files.length];
           const img = new Image();
           img.onload = () => {
             if (buf === 0) {
-              setBg(b, p);
+              setBg(b, f);
               b.classList.add("is-front");
               a.classList.remove("is-front");
               buf = 1;
             } else {
-              setBg(a, p);
+              setBg(a, f);
               a.classList.add("is-front");
               b.classList.remove("is-front");
               buf = 0;
             }
           };
-          img.src = p + (p.includes("?") ? "&" : "?") + "v=4";
+          const u = f.url || f;
+          img.src = u + (u.includes("?") ? "&" : "?") + "v=4";
           idx++;
         };
         setInterval(tick, 6000);
